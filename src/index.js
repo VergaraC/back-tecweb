@@ -1,19 +1,18 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const morgan = require('morgan');
-const helmet = require('helmet');
-const cors = require('cors');
+const bodyParser = require('body-parser'); // ler o corpo das requisições
+const morgan = require('morgan'); // logs
+const helmet = require('helmet'); // segurança básica
+const cors = require('cors'); // cross-origin resource sharing google pesquisar
 
 const { PORT } = require('./config/constants');
 
 const app = express();
 
 app.use(cors());
-app.use(helmet())
+app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(morgan('dev'));
-// app.use(helmet());
 
 require('./app/controllers/')(app);
 
