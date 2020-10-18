@@ -1,0 +1,5 @@
+node_modules 
+*.txt 
+.env
+src/config/auth.json
+src/config/constants.json
