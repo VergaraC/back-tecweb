@@ -30,8 +30,30 @@ function generateToken(params = {}) {
 
 // rota que lida com requisições do tipo GET em /places
 // exemplo www.<domain>.ext/places/
-router.get('/', async (req, res) => {
-    return res.send({ msg: 'ok' });
+router.get('/:_id', async (req, res) => {
+    try {
+        const { _id } = req.params;
+        if (!_id) {
+            console.log(req.body)
+            return res.status(400).send({ error: 'Missing _id' });
+        }
+
+        const opt = '-_id -__v';
+        const city = await City.findOne({ _id })
+            .select('-__v')
+            .populate({
+                path: 'country',
+                populate: [
+                    { path: 'languages', select: opt },
+                    { path: 'continent', select: opt }
+                ],
+                select: opt
+            });
+        return res.send({ city });
+    } catch (error) {
+        console.log(error)
+        res.status(400).send({ error: 'Problema na requisição' });
+    }
 });
 
 module.exports = (app) => app.use('/places', router);
