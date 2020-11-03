@@ -24,6 +24,11 @@ const UserSchema = new mongoose.Schema({
         required: true,
         select: false
     },
+    places: [{
+        type: mongoose.Schema.Types.ObjectID,
+        ref: "Place",
+        required: false
+    }],
     createdAt: {
         type: Date,
         default: Date.now
