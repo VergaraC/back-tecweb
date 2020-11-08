@@ -4,19 +4,21 @@ const mongoose = require('../../database');
 const PlaceSchema = new mongoose.Schema({
     city: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "City",
+        ref: 'City',
         required: true
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
         required: true
     },
-    annotation: {
-        type: String,
-        required: false
-    },
-    createdAt:{
+    annotations: [
+        {
+            type: String,
+            required: false
+        }
+    ],
+    createdAt: {
         type: Date,
         default: Date.now
     }

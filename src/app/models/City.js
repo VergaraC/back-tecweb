@@ -10,10 +10,10 @@ const CitySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectID,
         ref: 'Country'
     },
-    likes: {
-        type: Number,
+    likes: [{
+        type: mongoose.Schema.Types.ObjectID,
         required: false
-    },
+    }],
     lat: {
         type: String,
         required: false
