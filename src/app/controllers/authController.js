@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
         // significa que o usuário já existe, então deve devolver
         // uma mensagem de erro
         if (await User.findOne({ email })) {
-            return res.status(403).send({ error: 'User already exists' });
+            return res.status(403).json({ error: 'User already exists' });
         }
 
         // se não existir, tenta criar o usuario com as informações

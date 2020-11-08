@@ -33,8 +33,8 @@ function generateToken(params = {}) {
 }
 
 // rota que lida com requisições do tipo GET em /places
-// exemplo www.<domain>.ext/places/
-router.get('/:_id', async (req, res) => {
+// exemplo www.<domain>.ext/places/cities/5fa8226ff3453622b00feaf8
+router.get('/cities/:_id', async (req, res) => {
     try {
         const { _id } = req.params;
         const { userId, userName } = req;
@@ -73,21 +73,61 @@ router.get('/:_id', async (req, res) => {
     }
 });
 
+// Requisição responsável por listar as cidades "likadas" pelo usuário
+router.get('/likes', async (req, res) => {
+    try {
+        const { userId, userName } = req;
+
+        const opt = '-_id -__v';
+        const places = await Place.find({ owner: userId })
+            .select('-__v')
+            .populate({
+                path: 'city',
+                select: '-__v',
+                populate: {
+                    path: 'country',
+                    populate: [
+                        { path: 'languages', select: opt },
+                        { path: 'continent', select: opt }
+                    ],
+                    select: opt
+                }
+            })
+            .lean();
+
+        places.forEach(({ city }, index) => {
+            places[index].city.likes = city.likes?.length || 0;
+            places[index].city.likedByMe = true;
+        });
+
+        res.send({
+            places,
+            token: generateToken({ id: userId, name: userName })
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ error: 'Problema na requisição' });
+    }
+});
+
 // requisição responsável por "dar like" em uma cidade
-router.put('/:_id', async (req, res) => {
+router.put('/likes/:_id', async (req, res) => {
     try {
         const { _id } = req.params;
         const { userId, userName } = req;
 
         if (!_id) {
             return res.status(400).send({ error: 'Missing _id' });
-        } 
+        }
         // buscamos informações do usuário e da cidade no banco de dados
-        const user = await User.findById(userId).populate('places').lean();
+        const user = await User.findById(userId)
+            .populate({ path: 'places', select: '_id city' })
+            .lean();
         const city = await City.findById(_id).lean();
 
         // verificamos se o usuário já existe no array de likes da cidade
-        const alreadyLikedByMe = city.likes.some((like) => {
+        let likes = city.likes || [];
+        const alreadyLikedByMe = likes.some((like) => {
             return like.equals(userId);
         });
         /**
@@ -96,7 +136,7 @@ router.put('/:_id', async (req, res) => {
          * - removemos o place dos likes do usuário;
          * - deletamos o place;
          * - salvamos as alterações em city e user;
-         */ 
+         */
         if (alreadyLikedByMe) {
             const cityLikes = city.likes.filter((like) => {
                 return !like.equals(userId);
@@ -127,10 +167,10 @@ router.put('/:_id', async (req, res) => {
             owner: userId
         });
 
-        const cityLikes = city.likes;
+        const cityLikes = city.likes || [];
         cityLikes.push(userId);
 
-        const userPlaces = user.places;
+        const userPlaces = user.places || [];
         userPlaces.push(place._id);
 
         await place.save();
@@ -147,7 +187,7 @@ router.put('/:_id', async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        res.status(400).send({ error: 'Problema na requisição' });
+        res.status(400).send({ error: 'Problema ao atualizar likes' });
     }
 });
 
