@@ -218,7 +218,10 @@ router.post('/notes/:place_id', async (req, res) => {
 
         await Promise.all([note.save(), place.save()]);
 
-        res.send({ place });
+        res.send({
+            noteId: note._id,
+            token: generateToken({ id: userId, name: userName })
+        });
     } catch (error) {
         console.log(error);
         return res
@@ -239,12 +242,37 @@ router.put('/notes/:note_id', async (req, res) => {
             title
         });
 
-        res.send({ note });
+        res.send({
+            noteId: note._id,
+            token: generateToken({ id: userId, name: userName })
+        });
     } catch (error) {
         console.log(error);
         return res
             .status(400)
             .send({ error: 'Não foi possível atualizar nota' });
+    }
+});
+
+// deletar uma nota
+router.delete('/notes/:note_id', async (req, res) => {
+    try {
+        const { note_id } = req.params;
+        const { userId, userName } = req;
+
+        const note = await Note.findByIdAndDelete(note_id);
+
+        if (!note) {
+            return res.status(404).send({ error: 'Nota não encontrada' });
+        }
+
+        res.send({
+            noteId: note._id,
+            token: generateToken({ id: userId, name: userName })
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(400).send({ error: 'Não foi possível remover nota' });
     }
 });
 
