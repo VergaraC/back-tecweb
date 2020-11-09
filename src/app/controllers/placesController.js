@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('../../database');
 
 // id único da aplicação;
-const authConfig = require('../../config/auth');
+// const authConfig = require('../../config/auth');
 // middleware de autenticação
 const authMiddleware = require('../middlewares/auth');
 // router do express para utilizarmos rotas prefixadas (auth) para autenticação
@@ -28,7 +28,7 @@ const ObjectId = mongoose.Types.ObjectId;
  * @returns {object}        um token válido por mais 24h.
  */
 function generateToken(params = {}) {
-    return jwt.sign(params, authConfig.secret, {
+    return jwt.sign(params, process.env.secret, {
         expiresIn: 24 * 3600 // 1 dia
     });
 }

@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // id único da aplicação;
-const authConfig = require('../../config/auth');
+// const authConfig = require('../../config/auth');
 
 // modelo de usuário (gabarito de como deve ficar a
 // estrutura de um usuário);
@@ -18,7 +18,7 @@ const router = express.Router();
  * @returns {object}        um token válido por mais 24h.
  */
 function generateToken(params = {}) {
-    return jwt.sign(params, authConfig.secret, {
+    return jwt.sign(params, process.env.secret, {
         expiresIn: 86400
     });
 }

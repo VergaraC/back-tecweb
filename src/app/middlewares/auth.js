@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const authConfig = require('../../config/auth.json');
+// const authConfig = require('../../config/auth.json');
 
 // Intercepta a requisição e valida ela antes de encaminhar
 module.exports = (req, res, next) => {
@@ -42,7 +42,7 @@ module.exports = (req, res, next) => {
     }
 
     // por fim, verificamos se o token é válido
-    jwt.verify(token, authConfig.secret, (err, decoded) => {
+    jwt.verify(token, process.env.secret, (err, decoded) => {
         // houver algum erro na validação do jwt,
         // o token é inválido e devemos devolver negar
         // a autorização
