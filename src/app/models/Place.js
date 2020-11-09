@@ -14,7 +14,8 @@ const PlaceSchema = new mongoose.Schema({
     },
     annotations: [
         {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Note",
             required: false
         }
     ],
