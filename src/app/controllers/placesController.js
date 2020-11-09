@@ -19,6 +19,7 @@ const Continent = require('../models/Continent');
 const Country = require('../models/Country');
 const Place = require('../models/Place');
 const City = require('../models/City');
+const Note = require('../models/Note');
 const ObjectId = mongoose.Types.ObjectId;
 
 /**
@@ -81,18 +82,24 @@ router.get('/likes', async (req, res) => {
         const opt = '-_id -__v';
         const places = await Place.find({ owner: userId })
             .select('-__v')
-            .populate({
-                path: 'city',
-                select: '-__v',
-                populate: {
-                    path: 'country',
-                    populate: [
-                        { path: 'languages', select: opt },
-                        { path: 'continent', select: opt }
-                    ],
-                    select: opt
+            .populate([
+                {
+                    path: 'city',
+                    select: '-__v',
+                    populate: {
+                        path: 'country',
+                        populate: [
+                            { path: 'languages', select: opt },
+                            { path: 'continent', select: opt }
+                        ],
+                        select: opt
+                    }
+                },
+                {
+                    path: 'annotations',
+                    select: '-__v'
                 }
-            })
+            ])
             .lean();
 
         places.forEach(({ city }, index) => {
@@ -188,6 +195,56 @@ router.put('/likes/:_id', async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(400).send({ error: 'Problema ao atualizar likes' });
+    }
+});
+
+// criar uma nota sobre um lugar (salvo)
+router.post('/notes/:place_id', async (req, res) => {
+    try {
+        const { place_id } = req.params;
+        const { userId, userName } = req;
+        const { description, title } = req.body;
+
+        const place = await Place.findOne({ _id: place_id, owner: userId });
+
+        const note = new Note({
+            description,
+            title,
+            owner: userId,
+            place: place._id
+        });
+
+        place.annotations.push(note._id);
+
+        await Promise.all([note.save(), place.save()]);
+
+        res.send({ place });
+    } catch (error) {
+        console.log(error);
+        return res
+            .status(400)
+            .send({ error: 'Não foi possível atualizar nota' });
+    }
+});
+
+// atualizar uma nota
+router.put('/notes/:note_id', async (req, res) => {
+    try {
+        const { note_id } = req.params;
+        const { userId, userName } = req;
+        const { description, title } = req.body;
+
+        const note = await Note.findByIdAndUpdate(note_id, {
+            description,
+            title
+        });
+
+        res.send({ note });
+    } catch (error) {
+        console.log(error);
+        return res
+            .status(400)
+            .send({ error: 'Não foi possível atualizar nota' });
     }
 });
 
