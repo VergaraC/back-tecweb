@@ -103,7 +103,7 @@ router.get('/likes', async (req, res) => {
             .lean();
 
         places.forEach(({ city }, index) => {
-            places[index].city.likes = city?.likes?.length || 0;
+            places[index].city.likes = city.likes.length || 0;
             places[index].city.likedByMe = true;
         });
 
