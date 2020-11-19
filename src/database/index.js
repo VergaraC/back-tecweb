@@ -4,11 +4,11 @@ const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
 
-mongoose.connect(process.env.MONGO_CONNECTION, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
+mongoose.connect("mongodb+srv://rogue2:rogue1@cluster0.nslkg.mongodb.net", { useNewUrlParser: true, useCreateIndex: true, useUnifiedTopology: true});
+const connection = mongoose.connection;
+connection.once('open', () => {
+	console.log("MongoDB database connection established successfully");
 });
 
 module.exports = mongoose;
+
