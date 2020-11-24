@@ -24,6 +24,10 @@ const UserSchema = new mongoose.Schema({
         required: true,
         select: false
     },
+    description: {
+        type: String,
+        required: false,
+    },
     places: [{
         type: mongoose.Schema.Types.ObjectID,
         ref: "Place",
