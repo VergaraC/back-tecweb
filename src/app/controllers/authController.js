@@ -27,6 +27,7 @@ function generateToken(params = {}) {
 // exemplo www.<domain>.ext/auth/register
 router.post('/register', async (req, res) => {
     // recebe email do corpo da requisição
+    //console.log(Starting)
     const { email } = req.body;
     try {
         // verifica se alguém usa esse email no banco de dados
@@ -38,13 +39,16 @@ router.post('/register', async (req, res) => {
 
         // se não existir, tenta criar o usuario com as informações
         // inseridas e guarda em uma constante
+        //console.log("Pre User")
         const user = await User.create(req.body);
+        //console.log("Post User")
+
         // remove a propriedade "password" da resposta
         user.password = undefined;
         // devolve a resposta
         return res.send({
             user,
-            token: generateToken({ id: user.id, name: user.name })
+            token: generateToken({ id: user.id, name: user.name})
         });
     } catch (err) {
         // se houver algum erro/imprevisto no processo anterior,
@@ -79,9 +83,11 @@ router.post('/authenticate', async (req, res) => {
     }
     // remove "password" da resposta
     user.password = undefined;
+    console.log("Vai sair")
+    console.log(user.description)
 
     // devolve uma resposta com os dados do "user" e o token gerado
-    res.send({ user, token: generateToken({ id: user.id, name: user.name }) });
+    res.send({ user, token: generateToken({ id: user.id, name: user.name}) });
 });
 
 module.exports = (app) => app.use('/auth', router);
