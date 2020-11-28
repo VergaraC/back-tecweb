@@ -14,6 +14,10 @@ const CitySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectID,
         required: false
     }],
+    dislikes: [{
+        type: mongoose.Schema.Types.ObjectID,
+        required: false
+    }],
     lat: {
         type: String,
         required: false

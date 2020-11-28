@@ -61,8 +61,18 @@ router.get('/cities/:_id', async (req, res) => {
         let likedByMe = likes.some((like) => {
             return like.equals(userId);
         });
+
+        let dislikes = city.dislikes || [];
+        let dislikedByMe = dislikes.some((dislike) => {
+            return dislike.equals(userId);
+        });
+
+
         city.likes = likes.length;
         city.likedByMe = likedByMe;
+
+        city.dislikes = dislikes.length;
+        city.dislikedByMe = dislikedByMe;
 
         res.send({
             city,
@@ -195,6 +205,66 @@ router.put('/likes/:_id', async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(400).send({ error: 'Problema ao atualizar likes' });
+    }
+});
+
+// requisição responsável por "dar deslike" em uma cidade
+router.put('/dislikes/:_id', async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const { userId, userName } = req;
+
+        if (!_id) {
+            return res.status(400).send({ error: 'Missing _id' });
+        }
+        // buscamos informações do usuário e da cidade no banco de dados
+        const user = await User.findById(userId)
+            .populate({ path: 'places', select: '_id city' })
+            .lean();
+        const city = await City.findById(_id).lean();
+
+        // verificamos se o usuário já existe no array de dislikes da cidade
+        let dislikes = city.dislikes || [];
+        const alreadyDislikedByMe = dislikes.some((dislike) => {
+            return dislike.equals(userId);
+        });
+        /**
+         * Se o usuário já tiver dado dislike nessa cidade, consideramos uma ação de remover o dislike:
+         * - removemos o usuário de city.dislikes;
+         * - salvamos as alterações em city;
+         */
+        if (alreadyDislikedByMe) {
+            const cityDislikes = city.dislikes.filter((dislike) => {
+                return !dislike.equals(userId);
+            });
+
+            await City.findByIdAndUpdate(city._id, { dislikes: cityDislikes });
+
+            return res.send({
+                placeIsDisliked: false,
+                token: generateToken({ id: userId, name: userName })
+            });
+        }
+
+        /**
+         * Se o usuário não tiver dado dislike, consideramos uma ação de dislike:
+         * - adicionamos o usuário no array de dislikes da cidade;
+         */
+
+        const cityDislikes = city.dislikes || [];
+        cityDislikes.push(userId);
+
+        await City.findByIdAndUpdate(city._id, {
+            dislikes: cityDislikes
+        });
+
+        return res.send({
+            placeIsDisliked: true,
+            token: generateToken({ id: userId, name: userName })
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ error: 'Problema ao atualizar dislikes' });
     }
 });
 
